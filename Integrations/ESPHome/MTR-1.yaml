@@ -1,0 +1,414 @@
+#Define Project
+substitutions:
+  name: apollo-mtr-1
+  version: "24.4.1.1"
+  device_description: ${name} made by Apollo Automation - version ${version}.
+
+esphome:
+  name: "${name}"
+  friendly_name: Apollo MTR-1
+  comment: Apollo MTR-1
+  name_add_mac_suffix: true
+  platformio_options:
+    board_build.flash_mode: dio
+
+  project:
+    name: "ApolloAutomation.MTR-1"
+    version: "${version}"
+
+  min_version: 2024.2.0
+
+# Define Board
+esp32:
+  board: esp32-c3-devkitm-1
+  framework:
+    type: esp-idf
+
+dashboard_import:
+  package_import_url: github://ApolloAutomation/MTR-1/Integrations/ESPHome/MTR-1.yaml
+  import_full_config: false
+
+external_components:
+  - source:
+      type: git
+      url: https://github.com/hareeshmu/esphome
+      ref: ld2450
+    components: [ld2450]
+
+globals:
+  - id: cycleCounter
+    type: int
+    restore_value: no
+    initial_value: "0"
+  - id: button_press_timestamp
+    restore_value: no
+    type: uint32_t
+    initial_value: "0"
+
+# Enable Home Assistant API
+# Also Add Buzzer Service Connection
+api:
+  on_client_connected:
+    - delay: 1s
+    - light.turn_off: rgb_light
+    - lambda: "id(cycleCounter) = 30;"
+  services:
+    - service: play_buzzer
+      variables:
+        song_str: string
+      then:
+        - rtttl.play:
+            rtttl: !lambda "return song_str;"
+
+    #Co2 Calibration Service
+    - service: calibrate_co2_value
+      variables:
+        co2_ppm: float
+      then:
+        - scd4x.perform_forced_calibration:
+            value: !lambda "return co2_ppm;"
+            id: scd40
+
+logger:
+
+ota:
+  password: "apolloautomation"
+  safe_mode: false
+
+wifi:
+  power_save_mode: none
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Apollo MTR1 Hotspot"
+
+captive_portal:
+
+web_server:
+  port: 80
+
+# Set Up Key Ports For Communication
+i2c:
+  sda: GPIO1
+  scl: GPIO0
+  id: bus_a
+
+uart:
+  id: uart_bus
+  tx_pin:
+    number: GPIO21
+    mode:
+      input: true
+      pullup: true
+  rx_pin:
+    number: GPIO20
+    mode:
+      input: true
+      pullup: true
+  baud_rate: 256000
+  parity: NONE
+  stop_bits: 1
+
+ld2450:
+  id: ld2450_radar
+  uart_id: uart_bus
+  throttle: 500ms
+
+# Numbers For Configuration
+number:
+  - platform: ld2450
+    ld2450_id: ld2450_radar
+    presence_timeout:
+      name: "Timeout"
+    zone_1:
+      x1:
+        name: Zone-1 X1
+      y1:
+        name: Zone-1 Y1
+      x2:
+        name: Zone-1 X2
+      y2:
+        name: Zone-1 Y2
+    zone_2:
+      x1:
+        name: Zone-2 X1
+      y1:
+        name: Zone-2 Y1
+      x2:
+        name: Zone-2 X2
+      y2:
+        name: Zone-2 Y2
+    zone_3:
+      x1:
+        name: Zone-3 X1
+      y1:
+        name: Zone-3 Y1
+      x2:
+        name: Zone-3 X2
+      y2:
+        name: Zone-3 Y2
+
+# Buzzer
+output:
+  - platform: ledc
+    pin: GPIO10
+    id: buzzer
+rtttl:
+  output: buzzer
+
+binary_sensor:
+  - platform: status
+    name: Online
+    id: ink_ha_connected
+
+  - platform: gpio
+    pin:
+      number: GPIO9
+      inverted: true
+      mode:
+        input: true
+        pullup: true
+    id: reset_button
+    on_press:
+      then:
+        - lambda: |-
+            id(button_press_timestamp) = millis();
+
+    on_release:
+      then:
+        - lambda: |-
+            if (millis() - id(button_press_timestamp) >= 5000) {
+              // Remove Wifi
+              id(factory_reset_switch).turn_on();
+              
+            }
+
+sensor:
+  - platform: internal_temperature
+    name: "ESP Temperature"
+    id: sys_esp_temperature
+
+  - platform: uptime
+    name: Uptime
+    id: sys_uptime
+    update_interval: 60s
+
+  - platform: wifi_signal
+    name: RSSI
+    id: wifi_signal_db
+    update_interval: 60s
+    entity_category: "diagnostic"
+
+  - platform: scd4x
+    id: scd40
+    co2:
+      name: "CO2"
+      id: "co2"
+    automatic_self_calibration: false
+    update_interval: 60s
+    measurement_mode: "periodic"
+    i2c_id: bus_a
+    ambient_pressure_compensation_source: dps310pressure
+
+  - platform: dps310
+    id: dps_310
+    pressure:
+      name: "DPS310 Pressure"
+      id: dps310pressure
+    temperature:
+      id: dps310temperature
+    update_interval: 30s
+    i2c_id: bus_a
+
+  - platform: ltr390
+    id: ltr_390
+    light:
+      name: "LTR390 Light"
+      id: ltr390light
+      disabled_by_default: true
+    uv_index:
+      name: "LTR390 UV Index"
+      id: ltr390uvindex
+    update_interval: 5s
+
+  - platform: ld2450
+    ld2450_id: ld2450_radar
+    target_count:
+      name: Presence Target Count
+    still_target_count:
+      name: Still Target Count
+    moving_target_count:
+      name: Moving Target Count
+    target_1:
+      x:
+        name: Target-1 X
+      y:
+        name: Target-1 Y
+      speed:
+        name: Target-1 Speed
+      angle:
+        name: Target-1 Angle
+      distance:
+        name: Target-1 Distance
+      resolution:
+        name: Target-1 Resolution
+    target_2:
+      x:
+        name: Target-2 X
+      y:
+        name: Target-2 Y
+      speed:
+        name: Target-2 Speed
+      angle:
+        name: Target-2 Angle
+      distance:
+        name: Target-2 Distance
+      resolution:
+        name: Target-2 Resolution
+    target_3:
+      x:
+        name: Target-3 X
+      y:
+        name: Target-3 Y
+      speed:
+        name: Target-3 Speed
+      angle:
+        name: Target-3 Angle
+      distance:
+        name: Target-3 Distance
+      resolution:
+        name: Target-3 Resolution
+    zone_1:
+      target_count:
+        name: Zone-1 All Target Count
+      still_target_count:
+        name: Zone-1 Still Target Count
+      moving_target_count:
+        name: Zone-1 Moving Target Count
+    zone_2:
+      target_count:
+        name: Zone-2 All Target Count
+      still_target_count:
+        name: Zone-2 Still Target Count
+      moving_target_count:
+        name: Zone-2 Moving Target Count
+    zone_3:
+      target_count:
+        name: Zone-3 All Target Count
+      still_target_count:
+        name: Zone-3 Still Target Count
+      moving_target_count:
+        name: Zone-3 Moving Target Count
+
+light:
+  - platform: esp32_rmt_led_strip
+    id: rgb_light
+    name: "RGB Light"
+    pin: GPIO3
+    rmt_channel: 0
+    default_transition_length: 0s
+    chipset: WS2812
+    num_leds: 3
+    rgb_order: grb
+    effects:
+      - pulse:
+          name: "Slow Pulse"
+          transition_length: 250ms
+          update_interval: 250ms
+          min_brightness: 50%
+          max_brightness: 100%
+      - pulse:
+          name: "Fast Pulse"
+          transition_length: 100ms
+          update_interval: 100ms
+          min_brightness: 50%
+          max_brightness: 100%
+
+button:
+  - platform: restart
+    icon: mdi:power-cycle
+    name: "ESP Reboot"
+
+  - platform: factory_reset
+    disabled_by_default: True
+    name: "Factory Reset ESP"
+    id: factory_reset_all
+  - platform: template
+    name: "Calibrate SCD40 To 420ppm"
+    id: set_SCD40_calibrate
+    on_press:
+      - scd4x.perform_forced_calibration:
+          value: 420
+          id: scd40
+
+
+switch:
+  - platform: template
+    name: "Startup Light Blink"
+    id: startup_light_blink
+    icon: mdi:lightbulb
+    restore_mode: RESTORE_DEFAULT_ON
+    optimistic: true
+    entity_category: "config"
+  - platform: factory_reset
+    id: factory_reset_switch
+    internal: true
+  - platform: ld2450
+    ld2450_id: ld2450_radar
+    bluetooth:
+      name: "LD2450 Bluetooth"
+    multi_target:
+      name: "Multi Target Tracking"
+select:
+  - platform: ld2450
+    ld2450_id: ld2450_radar
+    baud_rate:
+      name: "Baud rate"
+    zone_type:
+      name: "Zone Type"
+
+text_sensor:
+  - platform: ld2450
+    ld2450_id: ld2450_radar
+    version:
+      name: "LD2450 Firmware"
+    mac_address:
+      name: "LD2450 BT MAC"
+    target_1:
+      direction:
+        name: "Target-1 Direction"
+    target_2:
+      direction:
+        name: "Target-2 Direction"
+    target_3:
+      direction:
+        name: "Target-3 Direction"
+
+#Used To Control RGB Light On Startup. Tells User Status Of Device
+interval:
+  - interval: 1s
+    then:
+      - if:
+          condition:
+            - binary_sensor.is_off: ink_ha_connected
+            - lambda: "return id(cycleCounter) < 30;"
+            - switch.is_on: startup_light_blink
+
+          then:
+            - light.toggle:
+                id: rgb_light
+            - lambda: "id(cycleCounter) += 1;"
+
+  - interval: 1s
+    then:
+      - if:
+          condition:
+            - binary_sensor.is_off: ink_ha_connected
+            - lambda: "return id(cycleCounter) > 30;"
+            - lambda: "return id(cycleCounter) < 31;"
+            - switch.is_on: startup_light_blink
+
+          then:
+            - light.turn_off:
+                id: rgb_light
+            - lambda: "id(cycleCounter) += 1;"
