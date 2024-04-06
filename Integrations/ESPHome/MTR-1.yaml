@@ -1,7 +1,7 @@
 #Define Project
 substitutions:
   name: apollo-mtr-1
-  version: "24.4.1.1"
+  version: "24.4.6.1"
   device_description: ${name} made by Apollo Automation - version ${version}.
 
 esphome:
@@ -70,6 +70,7 @@ api:
             id: scd40
 
 logger:
+  level: WARN
 
 ota:
   password: "apolloautomation"
@@ -147,6 +148,19 @@ number:
         name: Zone-3 X2
       y2:
         name: Zone-3 Y2
+  - platform: template
+    name: DPS310 Temperature Offset
+    id: dps310_temperature_offset
+    restore_value: true
+    initial_value: -18.86
+    min_value: -70.0
+    max_value: 70.0
+    entity_category: "CONFIG"
+    unit_of_measurement: "%"
+    optimistic: true
+    update_interval: never
+    step: 0.1
+    mode: box
 
 # Buzzer
 output:
@@ -216,7 +230,10 @@ sensor:
       name: "DPS310 Pressure"
       id: dps310pressure
     temperature:
+      name: "DPS310 Temperature"
       id: dps310temperature
+      filters:
+        - lambda: return x - id(dps310_temperature_offset).state;
     update_interval: 30s
     i2c_id: bus_a
 
@@ -225,7 +242,6 @@ sensor:
     light:
       name: "LTR390 Light"
       id: ltr390light
-      disabled_by_default: true
     uv_index:
       name: "LTR390 UV Index"
       id: ltr390uvindex
