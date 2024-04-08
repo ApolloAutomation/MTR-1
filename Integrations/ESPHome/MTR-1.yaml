@@ -73,7 +73,7 @@ logger:
   level: WARN
 
 ota:
-  password: "apolloautomation"
+  password:
   safe_mode: false
 
 wifi:
