@@ -1,7 +1,7 @@
 #Define Project
 substitutions:
   name: apollo-mtr-1
-  version: "24.4.6.1"
+  version: "24.4.10.1"
   device_description: ${name} made by Apollo Automation - version ${version}.
 
 esphome:
@@ -73,8 +73,7 @@ logger:
   level: WARN
 
 ota:
-  password:
-  safe_mode: false
+
 
 wifi:
   power_save_mode: none
