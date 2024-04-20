@@ -1,7 +1,7 @@
 #Define Project
 substitutions:
   name: apollo-mtr-1
-  version: "24.4.10.1"
+  version: "24.4.20.1"
   device_description: ${name} made by Apollo Automation - version ${version}.
 
 esphome:
@@ -20,9 +20,13 @@ esphome:
   on_boot:
     priority: -10
     then:
-      #Run Test Script On Boot
-      - lambda: |-
-          id(testScript).execute();
+      - if:
+          condition:
+            - lambda: "return id(runTest);"
+          then:
+            - lambda: "id(testScript).execute();"
+          else:
+            - lambda: "id(connectionCheck).execute();"  
   
 
 # Define Board
@@ -43,7 +47,7 @@ external_components:
     components: [ld2450]
 
 globals:
-  - id: cycleCounter
+  - id: connectionCycleCount
     type: int
     restore_value: no
     initial_value: "0"
@@ -55,6 +59,26 @@ globals:
     restore_value: yes
     type: bool
     initial_value: "true"
+  - id: testCycleCount
+    type: int
+    restore_value: no
+    initial_value: "0"
+  - id: dps310Passed
+    restore_value: no
+    type: bool
+    initial_value: "false"
+  - id: ltr390lightPassed
+    restore_value: no
+    type: bool
+    initial_value: "false"
+  - id: ltr390uvindexPassed
+    restore_value: no
+    type: bool
+    initial_value: "false"
+  - id: ld2450Passed
+    restore_value: no
+    type: bool
+    initial_value: "false"
 
 # Enable Home Assistant API
 # Also Add Buzzer Service Connection
@@ -62,7 +86,7 @@ api:
   on_client_connected:
     - delay: 1s
     - light.turn_off: rgb_light
-    - lambda: "id(cycleCounter) = 30;"
+    - lambda: "id(connectionCycleCount) = 33;"
   services:
     - service: play_buzzer
       variables:
@@ -201,10 +225,10 @@ binary_sensor:
     on_release:
       then:
         - lambda: |-
-            if (millis() - id(button_press_timestamp) >= 3000) {
+            if (millis() - id(button_press_timestamp) >= 1000) {
               id(testScript).execute();
             }
-            else if (millis() - id(button_press_timestamp) >= 10000) {
+            else if (millis() - id(button_press_timestamp) >= 8000) {
               id(factory_reset_switch).turn_on();
               
             }
@@ -412,83 +436,122 @@ text_sensor:
       direction:
         name: "Target-3 Direction"
 
-#Used To Control RGB Light On Startup. Tells User Status Of Device
-interval:
-
-
 
 script:
   - id: testScript
     then:
-      - lambda: |-
-          int attempt_count = 0;
-          bool test_successful = false;
-          bool ltr390light_passed = false;
-          bool ltr390uvindex_passed = false;
-          bool presence_target_count_passed = false;
-          bool dps_passed = false;
-
-          while (attempt_count < 10 && !test_successful) {
-            
-            if(ltr390light_passed == false && id(ltr390light).state > 10) {
-              ltr390light_passed = true;
-            }
-            if(ltr390uvindex_passed == false && !isnan(id(ltr390uvindex).state)) {
-              ltr390uvindex_passed = true;
-            }
-            if(presence_target_count_passed == false && id(presence_target_count).state > 0) {
-              presence_target_count_passed = true;
-            }
-            if(dps_passed == false && id(dps310pressure).state > 0) {
-              dps_passed = true;
-            }
-
-            if(ltr390light_passed && ltr390uvindex_passed && presence_target_count_passed && dps_passed) {
-              test_successful = true;
-            } else {
-              attempt_count++;
-              delay(100); // Wait for 1 second before retrying
-            }
-          }
-          id(runTest) = false;
-          if (test_successful == false) {
-          id(rgb_light).turn_on().set_rgb(1.0, 0.0, 0.0).perform();
-          }
-          else {
-          id(rgb_light).turn_on().set_rgb(0.0, 1.0, 0.0).perform();
-          }
+      - lambda: "id(testCycleCount) = 0;"
+      - while:
+          condition:
+            - lambda: "return id(testCycleCount) < 5;"
+          then:
+            - if:
+                condition:
+                  - lambda: "return id(dps310Passed) == false;"
+                then:
+                  - if:
+                      condition:
+                        - lambda: "return id(dps310pressure).state > 0;"
+                      then:
+                        - lambda: "id(dps310Passed) = true;"
+            - if:
+                condition:
+                  - lambda: "return id(ltr390lightPassed) == false;"
+                then:
+                  - if:
+                      condition:
+                        - lambda: "return id(ltr390light).state > 10;"
+                      then:
+                        - lambda: "id(ltr390lightPassed) = true;"
+            - if:
+                condition:
+                  - lambda: "return id(ltr390uvindexPassed) == false;"
+                then:
+                  - if:
+                      condition:
+                        - lambda: "return !isnan(id(ltr390uvindex).state);"
+                      then:
+                        - lambda: "id(ltr390uvindexPassed) = true;"
+            - if:
+                condition:
+                  - lambda: "return id(ld2450Passed) == false;"
+                then:
+                  - if:
+                      condition:
+                        - lambda: "return id(presence_target_count).state > 0;"
+                      then:
+                        - lambda: "id(ld2450Passed) = true;"
+            - if:
+                condition:
+                  - lambda: "return id(dps310Passed) && id(ltr390lightPassed) && id(ltr390uvindexPassed) && id(ld2450Passed);"
+                then:
+                  - lambda: "id(testCycleCount) = 10;"
+                  - lambda: "id(runTest) = false;"
+            - delay: 1s
+            - lambda: "id(testCycleCount) += 1;"
+      
+      #Check If Test Passed To Trigger Lights
+      - if:
+          condition:
+            - lambda: "return id(dps310Passed) && id(ltr390lightPassed) && id(ltr390uvindexPassed) && id(ld2450Passed);"
+          then:
+            - light.turn_on:
+                id: rgb_light
+                red: 0%
+                green: 100%
+                blue: 0%
+            - delay: 10s
+            - light.turn_on:
+                id: rgb_light
+                red: 0%
+                green: 0%
+                blue: 0%
+            - light.turn_off:
+                id: rgb_light
+            - lambda: "id(connectionCycleCount) = 1;"
+            - lambda: "id(connectionCheck).execute();"
+          else:
+            - light.turn_on:
+                id: rgb_light
+                red: 100%
+                green: 0%
+                blue: 0%
+            - delay: 10s
+            - light.turn_on:
+                id: rgb_light
+                red: 0%
+                green: 0%
+                blue: 0%
+            - light.turn_off:
+                id: rgb_light
+            - lambda: "id(connectionCycleCount) = 1;"
+            - lambda: "id(connectionCheck).execute();"
 
   - id: connectionCheck
     then:
       - while:
           condition:
-            - lambda: "return id(cycleCounter) < 31;"
+            - lambda: "return id(connectionCycleCount) < 32;"
           then:
             - if:
                 condition:
                   - binary_sensor.is_off: ink_ha_connected
-                  - lambda: "return id(cycleCounter) < 30;"
+                  - lambda: "return id(connectionCycleCount) < 30;"
                   - switch.is_on: startup_light_blink
-                  - lambda: "return id(runTest) == false;"
 
                 then:
-                  - light.toggle:
-                      id: rgb_light
-                      red: 0%
-                      green: 0%
-                      blue: 0%
-                  - lambda: "id(cycleCounter) += 1;"
+                  - light.toggle: rgb_light
+                  - lambda: "id(connectionCycleCount) += 1;"
 
             - if:
                 condition:
                   - binary_sensor.is_off: ink_ha_connected
-                  - lambda: "return id(cycleCounter) > 30;"
+                  - lambda: "return id(connectionCycleCount) > 30;"
                   - switch.is_on: startup_light_blink
-                  - lambda: "return id(runTest) == false;"
 
                 then:
                   - light.turn_off:
                       id: rgb_light
-                  - lambda: "id(cycleCounter) += 1;"
+                  - lambda: "id(connectionCycleCount) += 1;"
             - delay: 1s
       
