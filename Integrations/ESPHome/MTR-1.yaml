@@ -1,7 +1,7 @@
 #Define Project
 substitutions:
   name: apollo-mtr-1
-  version: "24.4.20.1"
+  version: "24.4.23.1"
   device_description: ${name} made by Apollo Automation - version ${version}.
 
 esphome:
@@ -40,11 +40,9 @@ dashboard_import:
   import_full_config: false
 
 external_components:
-  - source:
-      type: git
-      url: https://github.com/hareeshmu/esphome
-      ref: ld2450
-    components: [ld2450]
+  - source: github://pr#5674
+    components: [ ld2450 ]
+    refresh: 0s
 
 globals:
   - id: connectionCycleCount
@@ -86,7 +84,7 @@ api:
   on_client_connected:
     - delay: 1s
     - light.turn_off: rgb_light
-    - lambda: "id(connectionCycleCount) = 33;"
+    - lambda: "id(connectionCycleCount) = 31;"
   services:
     - service: play_buzzer
       variables:
@@ -190,7 +188,7 @@ number:
     min_value: -70.0
     max_value: 70.0
     entity_category: "CONFIG"
-    unit_of_measurement: "%"
+    unit_of_measurement: "°C"
     optimistic: true
     update_interval: never
     step: 0.1
@@ -545,7 +543,6 @@ script:
 
             - if:
                 condition:
-                  - binary_sensor.is_off: ink_ha_connected
                   - lambda: "return id(connectionCycleCount) > 30;"
                   - switch.is_on: startup_light_blink
 
