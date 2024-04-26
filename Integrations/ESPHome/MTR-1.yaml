@@ -42,7 +42,6 @@ dashboard_import:
 external_components:
   - source: github://pr#5674
     components: [ ld2450 ]
-    refresh: 0s
 
 globals:
   - id: connectionCycleCount
