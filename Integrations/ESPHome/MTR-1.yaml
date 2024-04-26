@@ -1,7 +1,7 @@
 #Define Project
 substitutions:
   name: apollo-mtr-1
-  version: "24.4.25.1"
+  version: "24.4.26.1"
   device_description: ${name} made by Apollo Automation - version ${version}.
 
 esphome:
@@ -83,8 +83,9 @@ globals:
 api:
   on_client_connected:
     - delay: 1s
+    - lambda: "id(connectionCycleCount) = 35;"
+    - delay: 1s
     - light.turn_off: rgb_light
-    - lambda: "id(connectionCycleCount) = 31;"
   services:
     - service: play_buzzer
       variables:
@@ -223,6 +224,8 @@ binary_sensor:
       then:
         - lambda: |-
             if (millis() - id(button_press_timestamp) >= 1000) {
+              id(testCycleCount) = 0;
+              id(runTest) = true;
               id(testScript).execute();
             }
             else if (millis() - id(button_press_timestamp) >= 8000) {
