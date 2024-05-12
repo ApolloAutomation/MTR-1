@@ -1,7 +1,7 @@
 #Define Project
 substitutions:
   name: apollo-mtr-1
-  version: "24.5.6.1"
+  version: "24.5.12.1"
   device_description: ${name} made by Apollo Automation - version ${version}.
 
 esphome:
@@ -172,7 +172,7 @@ number:
     name: DPS310 Temperature Offset
     id: dps310_temperature_offset
     restore_value: true
-    initial_value: -18.86
+    initial_value: 18.86
     min_value: -70.0
     max_value: 70.0
     entity_category: "CONFIG"
