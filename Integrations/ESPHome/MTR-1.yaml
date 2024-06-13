@@ -1,7 +1,7 @@
 #Define Project
 substitutions:
   name: apollo-mtr-1
-  version: "24.5.12.1"
+  version: "24.6.4.1"
   device_description: ${name} made by Apollo Automation - version ${version}.
 
 esphome:
@@ -27,7 +27,6 @@ esphome:
             - lambda: "id(testScript).execute();"
   
 
-# Define Board
 esp32:
   board: esp32-c3-devkitm-1
   framework:
@@ -38,7 +37,10 @@ dashboard_import:
   import_full_config: false
 
 external_components:
-  - source: github://pr#5674
+  - source:
+        type: git
+        url: https://github.com/TrevorSchirmer/esphome_ld2450
+        ref: CorrectTargetDirection
     components: [ ld2450 ]
 
 globals:
@@ -98,8 +100,6 @@ ota:
 
 wifi:
   power_save_mode: none
-
-  # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
     ssid: "Apollo MTR1 Hotspot"
 
@@ -108,7 +108,6 @@ captive_portal:
 web_server:
   port: 80
 
-# Set Up Key Ports For Communication
 i2c:
   sda: GPIO1
   scl: GPIO0
@@ -181,6 +180,34 @@ number:
     update_interval: never
     step: 0.1
     mode: box
+  - platform: template
+    name: SCD40 Temperature Offset
+    id: scd40_temperature_offset
+    restore_value: true
+    initial_value: 18.86
+    min_value: -70.0
+    max_value: 70.0
+    entity_category: "CONFIG"
+    unit_of_measurement: "°C"
+    optimistic: true
+    update_interval: never
+    step: 0.1
+    mode: box
+    disabled_by_default: true
+  - platform: template
+    name: SCD40 Humidity Offset
+    id: scd40_humidity_offset
+    restore_value: true
+    initial_value: 0
+    min_value: -70.0
+    max_value: 70.0
+    entity_category: "CONFIG"
+    unit_of_measurement: "%"
+    optimistic: true
+    update_interval: never
+    step: 0.1
+    mode: box
+    disabled_by_default: true
 
 # Buzzer
 output:
@@ -218,7 +245,6 @@ binary_sensor:
             }
             else if (millis() - id(button_press_timestamp) >= 8000) {
               id(factory_reset_switch).turn_on();
-              
             }
 
 sensor:
@@ -242,6 +268,18 @@ sensor:
     co2:
       name: "CO2"
       id: "co2"
+    temperature:
+      name: "SCD40 Temperature"
+      id: scd40_temperature
+      disabled_by_default: true
+      filters:
+        - lambda: return x - id(scd40_temperature_offset).state;
+    humidity:
+      name: "SCD40 Humidity"
+      id: scd40_humidity
+      disabled_by_default: true
+      filters:
+        - lambda: return x - id(scd40_humidity_offset).state;
     automatic_self_calibration: false
     update_interval: 60s
     measurement_mode: "periodic"
@@ -269,6 +307,7 @@ sensor:
     uv_index:
       name: "LTR390 UV Index"
       id: ltr390uvindex
+    update_interval: 5s
 
   - platform: ld2450
     ld2450_id: ld2450_radar
