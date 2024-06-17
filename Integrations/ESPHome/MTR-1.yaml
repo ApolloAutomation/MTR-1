@@ -1,7 +1,7 @@
 #Define Project
 substitutions:
   name: apollo-mtr-1
-  version: "24.6.4.1"
+  version: "24.6.17.1"
   device_description: ${name} made by Apollo Automation - version ${version}.
 
 esphome:
@@ -378,6 +378,17 @@ sensor:
         name: Zone-3 Still Target Count
       moving_target_count:
         name: Zone-3 Moving Target Count
+
+  - platform: template
+    name: "Target Presence"
+    id: target_presence
+    device_class: motion
+    lambda: |-
+      if (id(presence_target_count).state > 0) {
+        return 1;
+      } else {
+        return 0;
+      }
 
 light:
   - platform: esp32_rmt_led_strip
