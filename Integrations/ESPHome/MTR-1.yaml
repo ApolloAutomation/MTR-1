@@ -1,7 +1,7 @@
 #Define Project
 substitutions:
   name: apollo-mtr-1
-  version: "24.6.4.1"
+  version: "24.6.20.1"
   device_description: ${name} made by Apollo Automation - version ${version}.
 
 esphome:
@@ -16,7 +16,7 @@ esphome:
     name: "ApolloAutomation.MTR-1"
     version: "${version}"
 
-  min_version: 2024.2.0
+  min_version: 2024.6.0
   on_boot:
     priority: -10
     then:
@@ -96,6 +96,7 @@ api:
 logger:
 
 ota:
+  - platform: esphome
 
 
 wifi:
