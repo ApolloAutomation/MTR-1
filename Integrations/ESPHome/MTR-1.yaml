@@ -1,7 +1,7 @@
 #Define Project
 substitutions:
   name: apollo-mtr-1
-  version: "24.7.2.1"
+  version: "24.7.3.1"
   device_description: ${name} made by Apollo Automation - version ${version}.
 
 esphome:
@@ -112,18 +112,8 @@ update:
     name: Firmware Update
     source: https://apolloautomation.github.io/MTR-1/artifact/manifest.json
 
-improv_serial:
-
-esp32_improv:
-  authorizer: none
-
 
 wifi:
-  on_connect:
-    - delay: 5s  # Gives time for improv results to be transmitted
-    - ble.disable:
-  on_disconnect:
-    - ble.enable:
   ap:
     ssid: "Apollo MTR1 Hotspot"
 
