@@ -97,7 +97,6 @@ logger:
 
 ota:
   - platform: esphome
-    password: "apolloautomation"
     id: ota_default
   - platform: http_request
     id: ota_managed
