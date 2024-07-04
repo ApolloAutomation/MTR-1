@@ -1,7 +1,7 @@
 #Define Project
 substitutions:
   name: apollo-mtr-1
-  version: "24.7.3.1"
+  version: "24.7.4.1"
   device_description: ${name} made by Apollo Automation - version ${version}.
 
 esphome:
@@ -25,7 +25,6 @@ esphome:
             - lambda: "return id(runTest);"
           then:
             - lambda: "id(testScript).execute();"
-  
 
 esp32:
   board: esp32-c3-devkitm-1
@@ -93,7 +92,6 @@ api:
             value: !lambda "return co2_ppm;"
             id: scd40
 
-logger:
 
 ota:
   - platform: esphome
