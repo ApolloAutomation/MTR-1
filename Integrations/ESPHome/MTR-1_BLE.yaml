@@ -93,14 +93,16 @@ api:
             value: !lambda "return co2_ppm;"
             id: scd40
 
+logger:
 
 ota:
   - platform: esphome
     id: ota_default
 
+bluetooth_proxy:
+  active: true
 
 wifi:
-  power_save_mode: none
   ap:
     ssid: "Apollo MTR1 Hotspot"
 

@@ -11,6 +11,7 @@ jobs:
       matrix:
         file:
           - Integrations/ESPHome/MTR-1.yaml
+          - Integrations/ESPHome/MTR-1_BLE.yaml
     steps:
       - name: Checkout source code
         uses: actions/checkout@v4.1.7
