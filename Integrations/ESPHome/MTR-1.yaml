@@ -93,7 +93,6 @@ api:
             value: !lambda "return co2_ppm;"
             id: scd40
 
-logger:
 
 ota:
   - platform: esphome
