@@ -99,9 +99,10 @@ ota:
   - platform: esphome
     id: ota_default
 
+bluetooth_proxy:
+  active: true
 
 wifi:
-  power_save_mode: none
   ap:
     ssid: "Apollo MTR1 Hotspot"
 
