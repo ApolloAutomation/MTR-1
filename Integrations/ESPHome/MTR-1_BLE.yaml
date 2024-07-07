@@ -33,6 +33,9 @@ wifi:
   ap:
     ssid: "Apollo MTR1 Hotspot"
 
+bluetooth_proxy:
+  active: true
+
 external_components:
   - source:
         type: git
@@ -43,7 +46,7 @@ external_components:
 packages:
   remote_package:
     url: https://github.com/ApolloAutomation/MTR-1/
-    ref: SplitYAML
+    ref: main
     files:
       - Integrations/ESPHome/Core.yaml
     refresh: 0d
