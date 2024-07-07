@@ -61,16 +61,6 @@ globals:
     type: bool
     initial_value: "false"
 
-ota:
-  - platform: esphome
-    id: ota_default
-
-wifi:
-  power_save_mode: none
-  ap:
-    ssid: "Apollo MTR1 Hotspot"
-
-
 i2c:
   sda: GPIO1
   scl: GPIO0
