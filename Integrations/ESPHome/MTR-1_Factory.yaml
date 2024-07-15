@@ -21,7 +21,7 @@ esphome:
             - lambda: "id(testScript).execute();"
   
 dashboard_import:
-  package_import_url: github://ApolloAutomation/MTR-1/Integrations/ESPHome/MTR-1_Factory.yaml
+  package_import_url: github://ApolloAutomation/MTR-1/Integrations/ESPHome/MTR-1.yaml
   import_full_config: false
 
 improv_serial:
@@ -44,12 +44,6 @@ ota:
   - platform: esphome
     id: ota_esphome
 
-external_components:
-  - source:
-        type: git
-        url: https://github.com/TrevorSchirmer/esphome_ld2450
-        ref: CorrectTargetDirection
-    components: [ ld2450 ]
 
 packages:
   remote_package:

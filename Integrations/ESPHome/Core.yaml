@@ -1,6 +1,6 @@
 substitutions:
   name: apollo-mtr-1
-  version: "24.7.6.1"
+  version: "24.7.15.1"
   device_description: ${name} made by Apollo Automation - version ${version}.
 
 esp32:
@@ -30,6 +30,13 @@ api:
         - scd4x.perform_forced_calibration:
             value: !lambda "return co2_ppm;"
             id: scd40
+
+external_components:
+  - source:
+        type: git
+        url: https://github.com/TrevorSchirmer/esphome_ld2450
+        ref: CorrectTargetDirection
+    components: [ ld2450 ]
 
 globals:
   - id: button_press_timestamp

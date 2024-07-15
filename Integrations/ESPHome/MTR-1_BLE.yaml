@@ -36,12 +36,7 @@ wifi:
 bluetooth_proxy:
   active: true
 
-external_components:
-  - source:
-        type: git
-        url: https://github.com/TrevorSchirmer/esphome_ld2450
-        ref: CorrectTargetDirection
-    components: [ ld2450 ]
+
 
 packages:
   remote_package:
