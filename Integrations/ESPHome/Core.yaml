@@ -1,40 +1,35 @@
-#Define Project
 substitutions:
   name: apollo-mtr-1
   version: "24.7.15.1"
   device_description: ${name} made by Apollo Automation - version ${version}.
-
-esphome:
-  name: "${name}"
-  friendly_name: Apollo MTR-1
-  comment: Apollo MTR-1
-  name_add_mac_suffix: true
-  platformio_options:
-    board_build.flash_mode: dio
-
-  project:
-    name: "ApolloAutomation.MTR-1"
-    version: "${version}"
-
-  min_version: 2024.6.0
-  on_boot:
-    priority: -10
-    then:
-      - if:
-          condition:
-            - lambda: "return id(runTest);"
-          then:
-            - lambda: "id(testScript).execute();"
-  
 
 esp32:
   board: esp32-c3-devkitm-1
   framework:
     type: esp-idf
 
-dashboard_import:
-  package_import_url: github://ApolloAutomation/MTR-1/Integrations/ESPHome/MTR-1.yaml
-  import_full_config: false
+captive_portal:
+
+web_server:
+  port: 80
+
+api:
+  services:
+    - service: play_buzzer
+      variables:
+        song_str: string
+      then:
+        - rtttl.play:
+            rtttl: !lambda "return song_str;"
+
+    #Co2 Calibration Service
+    - service: calibrate_co2_value
+      variables:
+        co2_ppm: float
+      then:
+        - scd4x.perform_forced_calibration:
+            value: !lambda "return co2_ppm;"
+            id: scd40
 
 external_components:
   - source:
@@ -73,42 +68,6 @@ globals:
     type: bool
     initial_value: "false"
 
-# Enable Home Assistant API
-# Also Add Buzzer Service Connection
-api:
-  services:
-    - service: play_buzzer
-      variables:
-        song_str: string
-      then:
-        - rtttl.play:
-            rtttl: !lambda "return song_str;"
-
-    #Co2 Calibration Service
-    - service: calibrate_co2_value
-      variables:
-        co2_ppm: float
-      then:
-        - scd4x.perform_forced_calibration:
-            value: !lambda "return co2_ppm;"
-            id: scd40
-
-
-ota:
-  - platform: esphome
-    id: ota_default
-
-
-wifi:
-  power_save_mode: none
-  ap:
-    ssid: "Apollo MTR1 Hotspot"
-
-captive_portal:
-
-web_server:
-  port: 80
-
 i2c:
   sda: GPIO1
   scl: GPIO0
@@ -135,7 +94,6 @@ ld2450:
   uart_id: uart_bus
   throttle: 500ms
 
-# Numbers For Configuration
 number:
   - platform: ld2450
     ld2450_id: ld2450_radar
@@ -210,7 +168,6 @@ number:
     mode: box
     disabled_by_default: true
 
-# Buzzer
 output:
   - platform: ledc
     pin: GPIO10
