@@ -1,6 +1,6 @@
 substitutions:
   name: apollo-mtr-1
-  version: "24.7.15.1"
+  version: "24.9.24.1"
   device_description: ${name} made by Apollo Automation - version ${version}.
 
 esp32:
@@ -139,6 +139,8 @@ number:
     update_interval: never
     step: 0.1
     mode: box
+    disabled_by_default: true
+
   - platform: template
     name: SCD40 Temperature Offset
     id: scd40_temperature_offset
@@ -153,6 +155,7 @@ number:
     step: 0.1
     mode: box
     disabled_by_default: true
+    
   - platform: template
     name: SCD40 Humidity Offset
     id: scd40_humidity_offset
@@ -193,7 +196,6 @@ binary_sensor:
       then:
         - lambda: |-
             id(button_press_timestamp) = millis();
-
     on_release:
       then:
         - lambda: |-
@@ -202,9 +204,62 @@ binary_sensor:
               id(runTest) = true;
               id(testScript).execute();
             }
-            else if (millis() - id(button_press_timestamp) >= 8000) {
+            else if (millis() - id(button_press_timestamp) >= 5000) {
               id(factory_reset_switch).turn_on();
             }
+            else {
+              // StatusCheck
+              id(statusCheck).execute();
+            }
+
+  - platform: template
+    name: Zone-1 Presence
+    id: zone_1_presence
+    device_class: occupancy
+    icon: mdi:motion-sensor
+    lambda: |-
+      if (id(zone_1_target_count).state > 0) {
+        return true;
+      } else {
+        return false;
+      }
+
+  - platform: template
+    name: Zone-2 Presence
+    id: zone_2_presence
+    device_class: occupancy
+    icon: mdi:motion-sensor
+    lambda: |-
+      if (id(zone_2_target_count).state > 0) {
+        return true;
+      } else {
+        return false;
+      }
+
+  - platform: template
+    name: Zone-3 Presence
+    id: zone_3_presence
+    device_class: occupancy
+    icon: mdi:motion-sensor
+    lambda: |-
+      if (id(zone_3_target_count).state > 0) {
+        return true;
+      } else {
+        return false;
+      }
+
+  - platform: template
+    name: Has Target
+    id: has_target
+    device_class: occupancy
+    icon: mdi:motion-sensor
+    lambda: |-
+      if (id(presence_target_count).state > 0) {
+        return true;
+      } else {
+        return false;
+      }
+
 
 sensor:
   - platform: internal_temperature
@@ -318,6 +373,7 @@ sensor:
         name: Target-3 Resolution
     zone_1:
       target_count:
+        id: zone_1_target_count
         name: Zone-1 All Target Count
       still_target_count:
         name: Zone-1 Still Target Count
@@ -325,6 +381,7 @@ sensor:
         name: Zone-1 Moving Target Count
     zone_2:
       target_count:
+        id: zone_2_target_count
         name: Zone-2 All Target Count
       still_target_count:
         name: Zone-2 Still Target Count
@@ -332,6 +389,7 @@ sensor:
         name: Zone-2 Moving Target Count
     zone_3:
       target_count:
+        id: zone_3_target_count
         name: Zone-3 All Target Count
       still_target_count:
         name: Zone-3 Still Target Count
@@ -516,3 +574,39 @@ script:
                     blue: 0%
                 - light.turn_off:
                     id: rgb_light
+  
+  - id: statusCheck
+    then:
+      - if:
+          condition:
+            - lambda: 'return id(ink_ha_connected).state;'
+          then:
+            - logger.log: "Apollo Automation: Connected To HA"
+            - light.turn_on: 
+                id: rgb_light
+                brightness: 100%
+                red: 0%
+                green: 0%
+                blue: 100%
+          else:
+            - if:
+                condition:
+                  - wifi.connected
+                then:
+                  - logger.log: "Apollo Automation: Connected To Wifi"
+                  - light.turn_on: 
+                      id: rgb_light
+                      brightness: 100%
+                      red: 0%
+                      green: 100%
+                      blue: 0%
+                else:
+                  - logger.log: "Apollo Automation: Not Connected To Wifi"
+                  - light.turn_on: 
+                      id: rgb_light
+                      brightness: 100%
+                      red: 100%
+                      green: 100%
+                      blue: 0%
+      - delay: 5s
+      - light.turn_off: rgb_light
