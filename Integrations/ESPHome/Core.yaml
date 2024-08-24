@@ -1,6 +1,6 @@
 substitutions:
   name: apollo-mtr-1
-  version: "24.9.24.1"
+  version: "24.8.24.1"
   device_description: ${name} made by Apollo Automation - version ${version}.
 
 esp32:
@@ -155,7 +155,7 @@ number:
     step: 0.1
     mode: box
     disabled_by_default: true
-    
+
   - platform: template
     name: SCD40 Humidity Offset
     id: scd40_humidity_offset
