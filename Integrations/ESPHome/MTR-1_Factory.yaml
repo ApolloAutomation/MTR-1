@@ -11,45 +11,9 @@ esphome:
     version: "${version}"
 
   min_version: 2024.6.4
-  on_boot:
-    priority: -10
-    then:
-      - if:
-          condition:
-            - lambda: "return id(runTest);"
-          then:
-            - lambda: "id(testScript).execute();"
   
-dashboard_import:
-  package_import_url: github://ApolloAutomation/MTR-1/Integrations/ESPHome/MTR-1.yaml
-  import_full_config: false
-
-improv_serial:
-
-esp32_improv:
-  authorizer: none
-
-wifi:
-  on_connect:
-    - delay: 5s  
-    - ble.disable:
-  on_disconnect:
-    - ble.enable:
-  ap:
-    ssid: "Apollo MTR1 Hotspot"
-
 logger:
-
-ota:
-  - platform: esphome
-    id: ota_esphome
 
 
 packages:
-  remote_package:
-    url: https://github.com/ApolloAutomation/MTR-1/
-    ref: main
-    files:
-      - Integrations/ESPHome/Core.yaml
-    refresh: 0d
-
+  core: !include Core.yaml
