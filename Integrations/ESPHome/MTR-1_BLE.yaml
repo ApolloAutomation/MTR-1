@@ -29,14 +29,11 @@ ota:
     id: ota_esphome
 
 wifi:
-  power_save_mode: none
   ap:
     ssid: "Apollo MTR1 Hotspot"
 
 bluetooth_proxy:
   active: true
-
-
 
 packages:
   remote_package:
