@@ -1,4 +1,4 @@
-# Apollo Multi-Target Radar Multisensor (MTR-1)`
+# Apollo Multi-target Motion Multisensor (MTR-1)
 
 
 
@@ -11,7 +11,7 @@ YAML Files:
 
 
 Links: \
-Discord (Support/feedback/discussion/future products): [https://discord.gg/8PpS4yUaUh](https://discord.gg/mMNgQPyF94) \
+Discord (Support/feedback/discussion/future products): [https://dsc.gg/ApolloAutomation] \
 Shop: [https://apolloautomation.com](https://apolloautomation.com) \
 Wiki: [https://wiki.apolloautomation.com](https://wiki.apolloautomation.com/) \
 3D Files: [https://www.printables.com/model/932043-apollo-automation-mtr-1-multi-target-radar-multise](https://www.printables.com/model/932043-apollo-automation-mtr-1-multi-target-radar-multise)
