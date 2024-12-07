@@ -402,6 +402,7 @@ select:
     ld2450_id: ld2450_radar
     baud_rate:
       name: "Baud rate"
+      disabled_by_default: true
     zone_type:
       name: "Zone Type"
 
