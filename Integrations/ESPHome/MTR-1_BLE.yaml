@@ -21,7 +21,7 @@ esphome:
             - lambda: "id(testScript).execute();"
   
 dashboard_import:
-  package_import_url: github://ApolloAutomation/MTR-1/Integrations/ESPHome/MTR-1_Factory.yaml
+  package_import_url: github://ApolloAutomation/MTR-1/Integrations/ESPHome/MTR-1_BLE.yaml
   import_full_config: false
 
 ota:
@@ -34,6 +34,9 @@ wifi:
 
 bluetooth_proxy:
   active: true
+esp32_ble_tracker:
+  scan_parameters:
+    active: false
 
 packages:
   remote_package:
