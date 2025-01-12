@@ -38,11 +38,9 @@ wifi:
   power_save_mode: none
   ap:
     ssid: "Apollo MTR1 Hotspot"
+    
+web_server:
+  port: 80
 
 packages:
-  remote_package:
-    url: https://github.com/ApolloAutomation/MTR-1/
-    ref: main
-    files:
-      - Integrations/ESPHome/Core.yaml
-    refresh: 0d
+  core: !include Core.yaml
