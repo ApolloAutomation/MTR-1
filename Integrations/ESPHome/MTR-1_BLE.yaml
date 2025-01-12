@@ -39,10 +39,5 @@ esp32_ble_tracker:
     active: false
 
 packages:
-  remote_package:
-    url: https://github.com/ApolloAutomation/MTR-1/
-    ref: main
-    files:
-      - Integrations/ESPHome/Core.yaml
-    refresh: 0d
+  core: !include Core.yaml
 
