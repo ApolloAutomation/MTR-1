@@ -40,4 +40,3 @@ esp32_ble_tracker:
 
 packages:
   core: !include Core.yaml
-

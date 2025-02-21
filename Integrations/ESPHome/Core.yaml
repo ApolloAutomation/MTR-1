@@ -1,6 +1,6 @@
 substitutions:
   name: apollo-mtr-1
-  version: "25.1.11.1"
+  version: "25.2.20.1"
   device_description: ${name} made by Apollo Automation - version ${version}.
 
 esp32:
@@ -196,13 +196,13 @@ binary_sensor:
     on_release:
       then:
         - lambda: |-
-            if (millis() - id(button_press_timestamp) >= 1000) {
+            if (millis() - id(button_press_timestamp) >= 8000) {
+              id(factory_reset_switch).turn_on();
+            }
+            else if (millis() - id(button_press_timestamp) >= 1000) {
               id(testCycleCount) = 0;
               id(runTest) = true;
               id(testScript).execute();
-            }
-            else if (millis() - id(button_press_timestamp) >= 8000) {
-              id(factory_reset_switch).turn_on();
             }
 
 sensor:
@@ -401,6 +401,7 @@ select:
     ld2450_id: ld2450_radar
     baud_rate:
       name: "Baud rate"
+      disabled_by_default: true
     zone_type:
       name: "Zone Type"
 
