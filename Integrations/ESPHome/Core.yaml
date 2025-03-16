@@ -1,6 +1,6 @@
 substitutions:
   name: apollo-mtr-1
-  version: "25.2.20.1"
+  version: "25.3.16.1"
   device_description: ${name} made by Apollo Automation - version ${version}.
 
 esp32:
@@ -380,13 +380,6 @@ button:
 
 
 switch:
-  - platform: template
-    name: "Startup Light Blink"
-    id: startup_light_blink
-    icon: mdi:lightbulb
-    restore_mode: RESTORE_DEFAULT_ON
-    optimistic: true
-    entity_category: "config"
   - platform: factory_reset
     id: factory_reset_switch
     internal: true
