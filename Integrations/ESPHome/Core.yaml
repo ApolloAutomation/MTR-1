@@ -1,14 +1,12 @@
 substitutions:
   name: apollo-mtr-1
-  version: "25.3.16.1"
+  version: "25.3.21.1"
   device_description: ${name} made by Apollo Automation - version ${version}.
 
 esp32:
   board: esp32-c3-devkitm-1
   framework:
     type: esp-idf
-    version: 4.4.8
-    platform_version: 5.4.0
 
 captive_portal:
 
@@ -29,13 +27,6 @@ api:
         - scd4x.perform_forced_calibration:
             value: !lambda "return co2_ppm;"
             id: scd40
-
-external_components:
-  - source:
-        type: git
-        url: https://github.com/TrevorSchirmer/esphome_ld2450
-        ref: CorrectTargetDirection
-    components: [ ld2450 ]
 
 globals:
   - id: button_press_timestamp
@@ -342,7 +333,6 @@ light:
     id: rgb_light
     name: "RGB Light"
     pin: GPIO3
-    rmt_channel: 0
     default_transition_length: 0s
     chipset: WS2812
     num_leds: 3
