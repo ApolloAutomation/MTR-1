@@ -2,27 +2,95 @@ name: CI
 
 on:
   pull_request:
-  schedule:
-    - cron: '0 0 * * 1'
+
+permissions:
+  # Allow GITHUB_TOKEN to add labels to pull requests
+  pull-requests: write
+  issues: write
+  contents: read
+  id-token: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 jobs:
+  label-check:
+    name: Label Check
+    runs-on: ubuntu-latest
+    outputs:
+      chosen_label: ${{ steps.determine_label.outputs.chosen_label }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Write PR Body to File
+        # We disable history expansion, then write the PR body directly.
+        run: |
+          set +H
+          set +o histexpand
+          printf '%s\n' "${{ github.event.pull_request.body }}" > pr_body.txt
+
+      - name: Determine Single Label
+        id: determine_label
+        run: |
+          label=""
+
+          # 1) Bugfix
+          if grep -qE '^- \[x\] Bugfix' pr_body.txt; then
+            label="bugfix"
+
+          # 2) New feature
+          elif grep -qE '^- \[x\] New feature' pr_body.txt; then
+            label="new-feature"
+
+          # 3) Breaking change
+          elif grep -qE '^- \[x\] Breaking change' pr_body.txt; then
+            label="breaking-change"
+
+          # 4) Dependency update
+          elif grep -qE '^- \[x\] Dependency Update - Does not publish' pr_body.txt; then
+            label="dependency-update"
+          fi
+
+          echo "Chosen label: $label"
+          echo "chosen_label=$label" >> $GITHUB_OUTPUT
+
+      - name: Apply Single Label
+        if: ${{ steps.determine_label.outputs.chosen_label != '' }}
+        uses: actions-ecosystem/action-add-labels@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          labels: ${{ steps.determine_label.outputs.chosen_label }}
+
   ci:
-    name: Building ${{ matrix.file }}
+    name: ESPHome Build
+    needs: [ label-check ]
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         file:
-          - Integrations/ESPHome/MTR-1.yaml
           - Integrations/ESPHome/MTR-1_BLE.yaml
           - Integrations/ESPHome/MTR-1_Factory.yaml
+          - Integrations/ESPHome/MTR-1.yaml
         esphome-version:
           - stable
           - beta
           - dev
     steps:
-      - name: Checkout source code
-        uses: actions/checkout@v4.1.7
-      - name: Build ESPHome firmware to verify configuration
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build ESPHome firmware
         uses: esphome/build-action@v6
         with:
           yaml-file: ${{ matrix.file }}
+
+
+
+
+
+
+
