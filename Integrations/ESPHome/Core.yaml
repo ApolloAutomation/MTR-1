@@ -1,6 +1,6 @@
 substitutions:
   name: apollo-mtr-1
-  version: "25.3.24.1"
+  version: "25.4.10.1"
   device_description: ${name} made by Apollo Automation - version ${version}.
 
 esp32:
