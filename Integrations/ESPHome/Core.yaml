@@ -166,6 +166,18 @@ rtttl:
   output: buzzer
 
 binary_sensor:
+  - platform: ld2450
+    ld2450_id: ld2450_radar
+    has_target:
+      id: has_target_bs
+      name: Presence
+    has_moving_target:
+      id: has_moving_target_bs
+      name: Moving Target
+    has_still_target:
+      id: has_still_target_bs
+      name: Still Target
+
   - platform: status
     name: Online
     id: ink_ha_connected
