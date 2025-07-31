@@ -4,42 +4,24 @@ on:
   schedule:
     - cron: '0 0 * * 1'
 
-permissions:
-  contents: read
-  id-token: write
-
 jobs:
-  ci:
-    name: Building ${{ matrix.file }}
+  build:
+    name: Building ${{ matrix.file }} / ESPHome ${{ matrix.esphome-version }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
         file:
-          - Integrations/ESPHome/MTR-1_BLE.yaml
           - Integrations/ESPHome/MTR-1_Factory.yaml
           - Integrations/ESPHome/MTR-1.yaml
+          - Integrations/ESPHome/MTR-1_BLE.yaml
         esphome-version:
           - stable
           - beta
           - dev
     steps:
       - name: Checkout source code
-        uses: actions/checkout@v4.1.7
+        uses: actions/checkout@v4.2.2
       - name: Build ESPHome firmware to verify configuration
-        uses: esphome/build-action@v6
+        uses: esphome/build-action@v7
         with:
           yaml-file: ${{ matrix.file }}
-
-  notify:
-    name: Notify on Failure
-    needs: [ ci ]
-    if: failure()
-    runs-on: ubuntu-latest
-    steps:
-      - name: Send Discord notification
-        uses: sarisia/actions-status-discord@v1
-        with:
-          webhook: ${{ secrets.DISCORD_WEBHOOK }}
-          status: ${{ needs.ci.result }}
-          title: Build Failed - ESPHome Firmware
-          description: One or more ESPHome firmware builds failed. Check the logs for details.
