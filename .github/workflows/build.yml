@@ -1,191 +1,36 @@
-name: Publish
-env:
-  DEVICE_NAME: mtr-1
+name: Build and Publish
 
 on:
   push:
     branches:
       - main
-  # Uncomment if needed:
-  # workflow_dispatch:
-  #   inputs:
-  #     version:
-  #       description: 'The version of the firmware to build'
-  #       required: true
+  workflow_dispatch:
+    inputs:
+      bypass-yaml-check:
+        description: 'Bypass YAML change check (force build/publish)'
+        type: boolean
+        required: false
+        default: false
   # release:
   #   types: [published]
 
 jobs:
-  check-for-yaml:
-    name: Check for YAML Changes
-    runs-on: ubuntu-latest
-    outputs:
-      yaml_changed: ${{ steps.check.outputs.yaml_changed }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 2  # So we can diff the previous commit
-
-      - name: Find .yaml Changes in Last PR Merge
-        id: check
-        run: |
-          BASE_COMMIT=$(git rev-parse HEAD^1)
-          MERGE_COMMIT=$(git rev-parse HEAD)
-
-          if git diff --name-only $BASE_COMMIT $MERGE_COMMIT | grep -q '\.yaml$'; then
-            echo "yaml_changed=true" >> $GITHUB_OUTPUT
-          else
-            echo "yaml_changed=false" >> $GITHUB_OUTPUT
-          fi
-
-  set-version:
-    name: Set Version
-    runs-on: ubuntu-latest
-    needs: [check-for-yaml]
-    if: needs.check-for-yaml.outputs.yaml_changed == 'true'
-
-    # Expose job-level outputs so other jobs can access them
-    outputs:
-      version: ${{ steps.read_version.outputs.version }}
-      upload_url: ${{ steps.run-release-drafter.outputs.upload_url }}
-      body: ${{ steps.run-release-drafter.outputs.body }}
-      html_url: ${{ steps.run-release-drafter.outputs.html_url }}
+  build-and-publish:
+    uses: ApolloAutomation/Workflows/.github/workflows/build.yml@main
     permissions:
       contents: write
       pages: write
       id-token: write
       pull-requests: write
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Read version from YAML file
-        id: read_version
-        run: |
-          version=$(awk '/substitutions:/ {found=1} found && /version:/ {print $2; exit}' Integrations/ESPHome/Core.yaml | tr -d '"')
-          echo "version=$version" >> $GITHUB_OUTPUT
-          echo "Detected version: $version"
-
-      - name: Fetch Last Merged PR Body
-        id: last_pr
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          PR_INFO=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-            "https://api.github.com/repos/${{ github.repository }}/pulls?state=closed&sort=updated&direction=desc&per_page=1")
-          PR_BODY=$(echo "$PR_INFO" | jq -r '.[0].body')
-          echo "$PR_BODY" > pr_body.txt
-
-      - name: 🚀 Run Release Drafter
-        id: run-release-drafter
-        uses: release-drafter/release-drafter@v6
-        with:
-          version: ${{ steps.read_version.outputs.version }}
-          publish: true
-          tag: ${{ steps.read_version.outputs.version }}
-          name: Release ${{ steps.read_version.outputs.version }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  build-firmware:
-    name: Build And Release (Firmware)
-    uses: esphome/workflows/.github/workflows/build.yml@main
-    needs:
-      - check-for-yaml
-      - set-version
-    if: needs.check-for-yaml.outputs.yaml_changed == 'true'
     with:
-      files: |
+      device-name: mtr-1
+      yaml-files: |
         Integrations/ESPHome/MTR-1_Factory.yaml
+      firmware-names: "_Factory:firmware"
+      core-yaml-path: Integrations/ESPHome/Core.yaml
       esphome-version: stable
-      combined-name: firmware
-      release-summary: ${{ needs.set-version.outputs.body }}
-      release-version: ${{ needs.set-version.outputs.version }}
-
-  build-site:
-    name: Build Site
-    runs-on: ubuntu-latest
-    needs:
-      - check-for-yaml
-      - build-firmware
-      - set-version
-    if: needs.check-for-yaml.outputs.yaml_changed == 'true'
-    steps:
-      - name: Checkout source code
-        uses: actions/checkout@v4
-
-      - name: Build
-        uses: actions/jekyll-build-pages@v1.0.13
-        with:
-          source: ./static
-          destination: ./output
-
-      - name: Upload
-        uses: actions/upload-artifact@v4
-        with:
-          name: site
-          path: output
-
-  publish:
-    name: Publish to GitHub Pages
-    runs-on: ubuntu-latest
-    needs:
-      - build-site
-      - build-firmware
-      - set-version
-    if: needs.check-for-yaml.outputs.yaml_changed == 'true' && ${{ github.run_attempt == 1 }}
-    permissions:
-      contents: write
-      pages: write
-      id-token: write
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      # 1) Download Firmware
-      - uses: actions/download-artifact@v4
-        with:
-          name: firmware
-          path: firmware
-
-      # 3) Zip them up
-      - name: Zip firmware
-        run: |
-          zip -r firmware.zip firmware
-
-      # 4) Upload firmware.zip as an asset
-      - name: Upload firmware.zip
-        id: upload-firmware
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          # Use the job-level output from set-version:
-          upload_url: ${{ needs.set-version.outputs.upload_url }}
-          asset_path: firmware.zip
-          asset_name: firmware.zip
-          asset_content_type: application/zip
-
-      - name: Copy firmware and manifest
-        run: |-
-          mkdir -p output/firmware
-          cp -r firmware/${{ needs.build-firmware.outputs.version }}/* output/firmware/
-
-      - uses: actions/download-artifact@v4
-        with:
-          name: site
-          path: output
-
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: output
-          retention-days: 1
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      # Bypass check if manually triggered with bypass option
+      check-yaml-changes: ${{ !(github.event_name == 'workflow_dispatch' && github.event.inputs.bypass-yaml-check == 'true') }}
+      publish-to-pages: true
+      has-installer: true
+      installer-path: static
