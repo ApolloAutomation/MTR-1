@@ -82,7 +82,6 @@ uart:
 ld2450:
   id: ld2450_radar
   uart_id: uart_bus
-  throttle: 500ms
 
 number:
   - platform: ld2450
