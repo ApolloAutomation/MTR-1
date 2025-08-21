@@ -1,6 +1,6 @@
 substitutions:
   name: apollo-mtr-1
-  version: "25.8.6.1"
+  version: "25.8.12.1"
   device_description: ${name} made by Apollo Automation - version ${version}.
 
 esp32:
@@ -82,7 +82,6 @@ uart:
 ld2450:
   id: ld2450_radar
   uart_id: uart_bus
-  throttle: 500ms
 
 number:
   - platform: ld2450
@@ -364,6 +363,12 @@ light:
           max_brightness: 100%
 
 button:
+  - platform: ld2450
+    ld2450_id: ld2450_radar
+    factory_reset:
+      name: "Factory Reset LD2450"
+      disabled_by_default: True
+  
   - platform: restart
     icon: mdi:power-cycle
     name: "ESP Reboot"
