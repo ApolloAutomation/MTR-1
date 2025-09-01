@@ -20,6 +20,8 @@ esphome:
           then:
             - lambda: "id(testScript).execute();"
   
+logger:
+
 dashboard_import:
   package_import_url: github://ApolloAutomation/MTR-1/Integrations/ESPHome/MTR-1.yaml
   import_full_config: false
