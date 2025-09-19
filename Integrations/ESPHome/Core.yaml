@@ -1,6 +1,6 @@
 substitutions:
   name: apollo-mtr-1
-  version: "25.7.29.1"
+  version: "25.9.19.2"
   device_description: ${name} made by Apollo Automation - version ${version}.
 
 esp32:
@@ -347,7 +347,7 @@ light:
     pin: GPIO3
     default_transition_length: 0s
     chipset: WS2812
-    num_leds: 3
+    num_leds: 1
     rgb_order: grb
     effects:
       - pulse:
