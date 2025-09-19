@@ -46,6 +46,6 @@ template: |
 
   $CHANGES
 
-  **Full Changelog**: https://github.com/ApolloAutomation/AIR-1_Test/compare/$PREVIOUS_TAG...$RESOLVED_VERSION.1
+  **Full Changelog**: https://github.com/ApolloAutomation/MTR-1/compare/$PREVIOUS_TAG...$RESOLVED_VERSION.1
 
    Be sure to 🌟 this repository for updates!

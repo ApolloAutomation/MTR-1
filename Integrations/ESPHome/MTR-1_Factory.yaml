@@ -3,14 +3,12 @@ esphome:
   friendly_name: Apollo MTR-1
   comment: Apollo MTR-1
   name_add_mac_suffix: true
-  platformio_options:
-    board_build.flash_mode: dio
 
   project:
     name: "ApolloAutomation.MTR-1"
     version: "${version}"
 
-  min_version: 2024.6.4
+  min_version: 2025.8.0
   on_boot:
     priority: -10
     then:
