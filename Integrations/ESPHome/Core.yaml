@@ -3,6 +3,21 @@ substitutions:
   version: "25.8.12.1"
   device_description: ${name} made by Apollo Automation - version ${version}.
 
+esphome:
+  name: ${name}
+  comment: ${device_description}
+  project:
+    name: "ApolloAutomation.MTR_1"
+    version: ${version}
+  # Startup message - moved here from bottom
+  on_boot:
+    then:
+      - delay: 5s  # Wait for network connection
+      - mqtt.publish:
+          topic: apollo/mtr1/status/boot
+          payload: "MTR-1 booted and connected to MQTT"
+      - logger.log: "Device booted, MQTT status published"
+
 esp32:
   board: esp32-c3-devkitm-1
   framework:
@@ -27,6 +42,41 @@ api:
         - scd4x.perform_forced_calibration:
             value: !lambda "return co2_ppm;"
             id: scd40
+
+mqtt:
+  broker: 192.168.1.151
+  discovery: false  # Using standalone broker, not HA discovery
+  
+  # Subscribe to commands from your MQTT broker
+  on_message:
+    - topic: apollo/mtr1/command/light
+      payload: "ON"
+      then:
+        - light.turn_on: rgb_light
+        - mqtt.publish:
+            topic: apollo/mtr1/status/light
+            payload: "ON"
+        - logger.log: "RGB Light turned ON via MQTT"
+            
+    - topic: apollo/mtr1/command/light
+      payload: "OFF"
+      then:
+        - light.turn_off: rgb_light
+        - mqtt.publish:
+            topic: apollo/mtr1/status/light
+            payload: "OFF"
+        - logger.log: "RGB Light turned OFF via MQTT"
+            
+    - topic: apollo/mtr1/command/buzzer
+      then:
+        - rtttl.play:
+            rtttl: "beep:d=8,o=5,b=100:c"
+        - mqtt.publish:
+            topic: apollo/mtr1/status/buzzer
+            payload: "played"
+        - logger.log: 
+            format: "Buzzer activated via MQTT: %s"
+            args: ['x.c_str()']
 
 globals:
   - id: button_press_timestamp
@@ -170,6 +220,11 @@ binary_sensor:
     has_target:
       id: has_target_bs
       name: Presence
+      on_state:
+        then:
+          - mqtt.publish:
+              topic: apollo/mtr1/data/presence
+              payload: !lambda 'return x ? "detected" : "clear";'
     has_moving_target:
       id: has_moving_target_bs
       name: Moving Target
@@ -223,11 +278,32 @@ sensor:
     update_interval: 60s
     entity_category: "diagnostic"
 
+  # MQTT Timestamp sensor - addresses Optifi Goal #1
+  - platform: template
+    name: "MTR1 Timestamp"
+    id: device_timestamp
+    unit_of_measurement: "ms"
+    update_interval: 10s  # Publish every 10 seconds
+    lambda: 'return millis();'
+    on_value:
+      then:
+        - mqtt.publish:
+            topic: apollo/mtr1/data/timestamp
+            payload: !lambda 'return to_string((int)x);'
+        - logger.log:
+            format: "Published timestamp: %.0f ms"
+            args: ['x']
+
   - platform: scd4x
     id: scd40
     co2:
       name: "CO2"
       id: "co2"
+      on_value:
+        then:
+          - mqtt.publish:
+              topic: apollo/mtr1/data/co2
+              payload: !lambda 'return to_string(x);'
     temperature:
       name: "SCD40 Temperature"
       id: scd40_temperature
@@ -251,11 +327,21 @@ sensor:
     pressure:
       name: "DPS310 Pressure"
       id: dps310pressure
+      on_value:
+        then:
+          - mqtt.publish:
+              topic: apollo/mtr1/data/pressure
+              payload: !lambda 'return to_string(x);'
     temperature:
       name: "DPS310 Temperature"
       id: dps310temperature
       filters:
         - lambda: return x - id(dps310_temperature_offset).state;
+      on_value:
+        then:
+          - mqtt.publish:
+              topic: apollo/mtr1/data/temperature
+              payload: !lambda 'return to_string(x);'
     update_interval: 30s
     i2c_id: bus_a
 
@@ -264,9 +350,19 @@ sensor:
     light:
       name: "LTR390 Light"
       id: ltr390light
+      on_value:
+        then:
+          - mqtt.publish:
+              topic: apollo/mtr1/data/light
+              payload: !lambda 'return to_string(x);'
     uv_index:
       name: "LTR390 UV Index"
       id: ltr390uvindex
+      on_value:
+        then:
+          - mqtt.publish:
+              topic: apollo/mtr1/data/uv_index
+              payload: !lambda 'return to_string(x);'
     update_interval: 5s
 
   - platform: ld2450
@@ -385,6 +481,17 @@ button:
           value: 420
           id: scd40
 
+  # MQTT Test button - send manual message
+  - platform: template
+    name: "Send Test Message"
+    id: send_test_message
+    on_press:
+      then:
+        - mqtt.publish:
+            topic: apollo/mtr1/test
+            payload: !lambda |-
+              return "Test message from MTR-1 at " + to_string(millis()) + "ms";
+        - logger.log: "Test message published to MQTT"
 
 switch:
   - platform: factory_reset
@@ -422,6 +529,18 @@ text_sensor:
       direction:
         name: "Target-3 Direction"
 
+  # Device status for MQTT
+  - platform: template
+    name: "MTR1 Device Status"
+    id: device_status
+    update_interval: 60s
+    lambda: |-
+      return "MTR-1 running for " + to_string(millis()/1000) + " seconds";
+    on_value:
+      then:
+        - mqtt.publish:
+            topic: apollo/mtr1/status/device
+            payload: !lambda 'return x;'
 
 script:
   - id: testScript      
