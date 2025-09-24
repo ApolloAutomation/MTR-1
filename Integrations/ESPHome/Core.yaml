@@ -370,6 +370,11 @@ sensor:
     target_count:
       name: Presence Target Count
       id: presence_target_count
+      on_value:
+        then:
+          - mqtt.publish:
+              topic: apollo/mtr1/data/target_count
+              payload: !lambda 'return to_string((int)x);'
     still_target_count:
       name: Still Target Count
     moving_target_count:
