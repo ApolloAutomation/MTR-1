@@ -37,7 +37,6 @@ wifi:
     ssid: "Apollo MTR1 Hotspot"
 
 logger:
-  level: WARN
 
 ota:
   - platform: esphome
