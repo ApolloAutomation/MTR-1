@@ -346,7 +346,7 @@ light:
     pin: GPIO3
     default_transition_length: 0s
     chipset: WS2812
-    num_leds: 3
+    num_leds: 1
     rgb_order: grb
     effects:
       - pulse:
