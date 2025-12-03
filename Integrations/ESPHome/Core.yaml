@@ -1,6 +1,6 @@
 substitutions:
   name: apollo-mtr-1
-  version: "25.8.12.1"
+  version: "25.9.19.1"
   device_description: ${name} made by Apollo Automation - version ${version}.
 
 esp32:
@@ -168,14 +168,14 @@ binary_sensor:
   - platform: ld2450
     ld2450_id: ld2450_radar
     has_target:
-      id: has_target_bs
-      name: Presence
+      id: ld2450_presence
+      name: "LD2450 Presence"
     has_moving_target:
-      id: has_moving_target_bs
-      name: Moving Target
+      id: ld2450_moving_target
+      name: "LD2450 Moving Target"
     has_still_target:
-      id: has_still_target_bs
-      name: Still Target
+      id: ld2450_still_target
+      name: "LD2450 Still Target"
 
   - platform: status
     name: Online
@@ -346,7 +346,7 @@ light:
     pin: GPIO3
     default_transition_length: 0s
     chipset: WS2812
-    num_leds: 3
+    num_leds: 1
     rgb_order: grb
     effects:
       - pulse:
