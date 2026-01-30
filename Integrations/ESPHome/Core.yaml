@@ -16,6 +16,9 @@ web_server:
   version: 3
 
 api:
+  on_connect:
+    then:
+      - script.execute: statusCheck
   actions:
     - action: play_buzzer
       variables:
@@ -434,7 +437,6 @@ text_sensor:
   - platform: template
     name: "Apollo Firmware Version"
     id: apollo_firmware_version
-    update_interval: 5s
     lambda: |-
       return {"${version}"};
     entity_category: "diagnostic"
