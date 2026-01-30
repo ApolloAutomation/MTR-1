@@ -432,7 +432,7 @@ text_sensor:
     hide_timestamp: true
 
   - platform: template
-    name: "Firmware Version"
+    name: "Apollo Firmware Version"
     id: apollo_firmware_version
     update_interval: 5s
     lambda: |-
