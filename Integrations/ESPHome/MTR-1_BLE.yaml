@@ -12,7 +12,6 @@ esphome:
   on_boot:
     priority: 600
     then:
-      - script.execute: statusCheck
       - if:
           condition:
             - lambda: "return id(runTest);"
@@ -32,6 +31,9 @@ ota:
 wifi:
   ap:
     ssid: "Apollo MTR1 Hotspot"
+  on_connect:
+    then:
+      - script.execute: statusCheck
 
 bluetooth_proxy:
   active: true
