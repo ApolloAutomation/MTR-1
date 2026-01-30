@@ -444,6 +444,7 @@ text_sensor:
 
 script:
   - id: statusCheck
+    mode: restart
     then:
       - if:
           condition:
