@@ -16,7 +16,7 @@ web_server:
   version: 3
 
 api:
-  on_connect:
+  on_client_connected:
     then:
       - script.execute: statusCheck
   actions:
