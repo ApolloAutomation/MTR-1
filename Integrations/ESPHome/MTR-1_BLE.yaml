@@ -10,7 +10,7 @@ esphome:
 
   min_version: 2025.8.0
   on_boot:
-    priority: -10
+    priority: 600
     then:
       - script.execute: statusCheck
       - if:
