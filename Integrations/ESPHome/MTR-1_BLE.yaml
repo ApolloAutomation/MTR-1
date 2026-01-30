@@ -12,6 +12,7 @@ esphome:
   on_boot:
     priority: -10
     then:
+      - script.execute: statusCheck
       - if:
           condition:
             - lambda: "return id(runTest);"
