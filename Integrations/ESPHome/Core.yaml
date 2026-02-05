@@ -19,7 +19,12 @@ api:
   on_client_connected:
     then:
       - delay: 1s  # Let connection stabilize before showing status
-      - script.execute: statusCheck
+      - if:
+          condition:
+            - lambda: 'return !id(first_boot_done);'
+          then:
+            - lambda: 'id(first_boot_done) = true;'
+            - script.execute: statusCheck
   actions:
     - action: play_buzzer
       variables:
@@ -218,6 +223,10 @@ binary_sensor:
               id(testCycleCount) = 0;
               id(runTest) = true;
               id(testScript).execute();
+            }
+            else {
+              // Short press (<1s) - run status check
+              id(statusCheck).execute();
             }
 
 sensor:
@@ -453,44 +462,37 @@ script:
     then:
       - if:
           condition:
-            - lambda: 'return id(first_boot_done);'
+            - lambda: 'return id(ink_ha_connected).state;'
           then:
-            - logger.log: "Apollo Automation: Skipping status check (not first boot)"
+            - logger.log: "Apollo Automation: Connected To HA"
+            - light.turn_on:
+                id: rgb_light
+                brightness: 100%
+                red: 0%
+                green: 0%
+                blue: 100%
           else:
-            - lambda: 'id(first_boot_done) = true;'
             - if:
                 condition:
-                  - lambda: 'return id(ink_ha_connected).state;'
+                  - wifi.connected
                 then:
-                  - logger.log: "Apollo Automation: Connected To HA"
+                  - logger.log: "Apollo Automation: Connected To Wifi"
                   - light.turn_on:
                       id: rgb_light
                       brightness: 100%
                       red: 0%
-                      green: 0%
-                      blue: 100%
+                      green: 100%
+                      blue: 0%
                 else:
-                  - if:
-                      condition:
-                        - wifi.connected
-                      then:
-                        - logger.log: "Apollo Automation: Connected To Wifi"
-                        - light.turn_on:
-                            id: rgb_light
-                            brightness: 100%
-                            red: 0%
-                            green: 100%
-                            blue: 0%
-                      else:
-                        - logger.log: "Apollo Automation: Not Connected To Wifi"
-                        - light.turn_on:
-                            id: rgb_light
-                            brightness: 100%
-                            red: 100%
-                            green: 100%
-                            blue: 0%
-            - delay: 5s
-            - light.turn_off: rgb_light
+                  - logger.log: "Apollo Automation: Not Connected To Wifi"
+                  - light.turn_on:
+                      id: rgb_light
+                      brightness: 100%
+                      red: 100%
+                      green: 100%
+                      blue: 0%
+      - delay: 5s
+      - light.turn_off: rgb_light
 
   - id: testScript      
     then:

@@ -33,7 +33,12 @@ wifi:
   on_connect:
     then:
       - delay: 10s  # Give HA time to connect first, then fall back to WiFi-only status
-      - script.execute: statusCheck
+      - if:
+          condition:
+            - lambda: 'return !id(first_boot_done);'
+          then:
+            - lambda: 'id(first_boot_done) = true;'
+            - script.execute: statusCheck
 
 logger:
 
