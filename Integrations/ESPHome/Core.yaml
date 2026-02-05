@@ -21,7 +21,7 @@ api:
       - delay: 1s  # Let connection stabilize before showing status
       - if:
           condition:
-            - lambda: 'return !id(first_boot_done);'
+            - lambda: 'return !id(first_boot_done) && id(boot_status_enabled);'
           then:
             - lambda: 'id(first_boot_done) = true;'
             - script.execute: statusCheck
@@ -75,6 +75,10 @@ globals:
     restore_value: no
     type: bool
     initial_value: "false"
+  - id: boot_status_enabled
+    restore_value: yes
+    type: bool
+    initial_value: "true"
 
 i2c:
   sda: GPIO1
@@ -219,14 +223,8 @@ binary_sensor:
             if (millis() - id(button_press_timestamp) >= 8000) {
               id(factory_reset_switch).turn_on();
             }
-            else if (millis() - id(button_press_timestamp) >= 1000) {
-              id(testCycleCount) = 0;
-              id(runTest) = true;
-              id(testScript).execute();
-            }
-            else {
-              // Short press (<1s) - run status check
-              id(statusCheck).execute();
+            else if (millis() - id(button_press_timestamp) >= 2000) {
+              id(diagnosticCheck).execute();
             }
 
 sensor:
@@ -412,6 +410,18 @@ switch:
   - platform: factory_reset
     id: factory_reset_switch
     internal: true
+  - platform: template
+    name: "Boot Status LED"
+    id: boot_status_led_switch
+    icon: mdi:led-on
+    entity_category: "config"
+    restore_mode: RESTORE_DEFAULT_ON
+    optimistic: true
+    lambda: 'return id(boot_status_enabled);'
+    turn_on_action:
+      - lambda: 'id(boot_status_enabled) = true;'
+    turn_off_action:
+      - lambda: 'id(boot_status_enabled) = false;'
   - platform: ld2450
     ld2450_id: ld2450_radar
     bluetooth:
@@ -493,6 +503,17 @@ script:
                       blue: 0%
       - delay: 5s
       - light.turn_off: rgb_light
+
+  - id: diagnosticCheck
+    mode: single
+    then:
+      - script.execute: statusCheck
+      - script.wait: statusCheck
+      - delay: 3s
+      - lambda: |-
+          id(testCycleCount) = 0;
+          id(runTest) = true;
+      - script.execute: testScript
 
   - id: testScript      
     then:
