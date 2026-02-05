@@ -18,6 +18,7 @@ web_server:
 api:
   on_client_connected:
     then:
+      - delay: 1s  # Let connection stabilize before showing status
       - script.execute: statusCheck
   actions:
     - action: play_buzzer
@@ -448,7 +449,7 @@ text_sensor:
 
 script:
   - id: statusCheck
-    mode: restart
+    mode: single  # First call runs to completion, subsequent calls ignored
     then:
       - if:
           condition:

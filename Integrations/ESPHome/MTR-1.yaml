@@ -34,6 +34,7 @@ wifi:
     ssid: "Apollo MTR1 Hotspot"
   on_connect:
     then:
+      - delay: 10s  # Give HA time to connect first, then fall back to WiFi-only status
       - script.execute: statusCheck
     
 packages:
