@@ -323,42 +323,78 @@ sensor:
     target_1:
       x:
         name: Target-1 X
+        filters:
+          - lambda: return isnan(x) ? 0.0 : x;
       y:
         name: Target-1 Y
+        filters:
+          - lambda: return isnan(x) ? 0.0 : x;
       speed:
         name: Target-1 Speed
+        filters:
+          - lambda: return isnan(x) ? 0.0 : x;
       angle:
         name: Target-1 Angle
+        filters:
+          - lambda: return isnan(x) ? 0.0 : x;
       distance:
         name: Target-1 Distance
+        filters:
+          - lambda: return isnan(x) ? 0.0 : x;
       resolution:
         name: Target-1 Resolution
+        filters:
+          - lambda: return isnan(x) ? 0.0 : x;
     target_2:
       x:
         name: Target-2 X
+        filters:
+          - lambda: return isnan(x) ? 0.0 : x;
       y:
         name: Target-2 Y
+        filters:
+          - lambda: return isnan(x) ? 0.0 : x;
       speed:
         name: Target-2 Speed
+        filters:
+          - lambda: return isnan(x) ? 0.0 : x;
       angle:
         name: Target-2 Angle
+        filters:
+          - lambda: return isnan(x) ? 0.0 : x;
       distance:
         name: Target-2 Distance
+        filters:
+          - lambda: return isnan(x) ? 0.0 : x;
       resolution:
         name: Target-2 Resolution
+        filters:
+          - lambda: return isnan(x) ? 0.0 : x;
     target_3:
       x:
         name: Target-3 X
+        filters:
+          - lambda: return isnan(x) ? 0.0 : x;
       y:
         name: Target-3 Y
+        filters:
+          - lambda: return isnan(x) ? 0.0 : x;
       speed:
         name: Target-3 Speed
+        filters:
+          - lambda: return isnan(x) ? 0.0 : x;
       angle:
         name: Target-3 Angle
+        filters:
+          - lambda: return isnan(x) ? 0.0 : x;
       distance:
         name: Target-3 Distance
+        filters:
+          - lambda: return isnan(x) ? 0.0 : x;
       resolution:
         name: Target-3 Resolution
+        filters:
+          - lambda: return isnan(x) ? 0.0 : x;
     zone_1:
       target_count:
         name: Zone-1 All Target Count
