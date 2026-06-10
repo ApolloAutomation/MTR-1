@@ -47,6 +47,8 @@ update:
     source: https://apolloautomation.github.io/MTR-1/firmware-ble/manifest.json
 
 wifi:
+  on_connect:
+    - component.update: update_http_request
   ap:
     ssid: "Apollo MTR1 Hotspot"
 

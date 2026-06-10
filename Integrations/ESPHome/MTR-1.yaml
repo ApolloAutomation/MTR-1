@@ -48,6 +48,8 @@ update:
 
 wifi:
   power_save_mode: none
+  on_connect:
+    - component.update: update_http_request
   ap:
     ssid: "Apollo MTR1 Hotspot"
     

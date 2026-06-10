@@ -33,6 +33,8 @@ esp32_improv:
   authorizer: none
 
 wifi:
+  on_connect:
+    - component.update: update_http_request
   ap:
     ssid: "Apollo MTR1 Hotspot"
 
