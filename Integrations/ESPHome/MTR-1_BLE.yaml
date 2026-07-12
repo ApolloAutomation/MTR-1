@@ -1,3 +1,8 @@
+substitutions:
+  # Legacy BLE devices keep updating from the firmware-ble manifest.
+  ota_stable_manifest: "https://apolloautomation.github.io/MTR-1/firmware-ble/manifest.json"
+  ota_beta_manifest: "https://github.com/ApolloAutomation/MTR-1/releases/download/beta-fw/manifest-ble.json"
+
 esphome:
   name: "${name}"
   friendly_name: Apollo MTR-1
@@ -35,9 +40,6 @@ ota:
   - platform: http_request
     id: ota_managed
 
-http_request:
-  verify_ssl: true
-
 safe_mode:
 
 update:
@@ -51,12 +53,6 @@ wifi:
     - component.update: update_http_request
   ap:
     ssid: "Apollo MTR1 Hotspot"
-
-bluetooth_proxy:
-  active: true
-esp32_ble_tracker:
-  scan_parameters:
-    active: false
 
 packages:
   core: !include Core.yaml
