@@ -1,6 +1,6 @@
 substitutions:
   name: apollo-mtr-1
-  version: "26.7.12.1"
+  version: "26.7.14.1"
   device_description: ${name} made by Apollo Automation - version ${version}.
   # Default update channel on first boot (no stored user choice yet, i.e. a
   # fresh flash). The beta-channel builds override this to "Beta" (see
@@ -68,6 +68,7 @@ http_request:
   buffer_size_tx: 2048
 
 api:
+  encryption:
   actions:
     - action: play_buzzer
       variables:
