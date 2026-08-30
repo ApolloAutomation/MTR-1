@@ -1,6 +1,6 @@
 substitutions:
   name: apollo-mtr-1
-  version: "26.8.18.2"
+  version: "26.8.27.1"
   device_description: ${name} made by Apollo Automation - version ${version}.
   # Manifest URL bases. Stable = GitHub Pages (main branch builds).
   # Beta = rolling "beta-fw" pre-release assets (beta branch builds).
@@ -497,7 +497,7 @@ light:
     default_transition_length: 0s
     chipset: WS2812
     num_leds: 1
-    rgb_order: grb
+    channel_colors: GRB
     effects:
       - pulse:
           name: "Slow Pulse"
