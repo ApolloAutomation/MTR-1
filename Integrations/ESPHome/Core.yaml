@@ -1,6 +1,6 @@
 substitutions:
   name: apollo-mtr-1
-  version: "26.8.18.1"
+  version: "26.8.27.1"
   device_description: ${name} made by Apollo Automation - version ${version}.
   # Default update channel on first boot (no stored user choice yet, i.e. a
   # fresh flash). The beta-channel builds override this to "Beta" (see
@@ -502,7 +502,7 @@ light:
     default_transition_length: 0s
     chipset: WS2812
     num_leds: 1
-    rgb_order: grb
+    channel_colors: GRB
     effects:
       - pulse:
           name: "Slow Pulse"
