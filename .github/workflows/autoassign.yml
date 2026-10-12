@@ -7,16 +7,14 @@ on:
     types: [opened]
   pull_request_target:
     types: [opened]
+
+permissions:
+  issues: write
+  pull-requests: write
+
 jobs:
-  run:
-    runs-on: ubuntu-latest
-    permissions:
-      issues: write
-      pull-requests: write
-    steps:
-    - name: 'Auto-assign issue'
-      uses: pozil/auto-assign-issue@v2
-      with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          assignees: bharvey88
-          numOfAssignee: 1
+  auto-assign:
+    uses: ApolloAutomation/Workflows/.github/workflows/autoassign.yml@main
+    with:
+      assignees: bharvey88
+      num-of-assignees: 1
