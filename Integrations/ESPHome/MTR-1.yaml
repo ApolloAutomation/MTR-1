@@ -8,7 +8,7 @@ esphome:
     name: "ApolloAutomation.MTR-1"
     version: "${version}"
 
-  min_version: 2026.8.0
+  min_version: 2026.10.0
   on_boot:
   - priority: 500
     then:
@@ -31,7 +31,7 @@ dashboard_import:
 
 ota:
   - platform: esphome
-    id: ota_default
+    id: ota_esphome
   - platform: http_request
     id: ota_managed
 
@@ -44,6 +44,8 @@ update:
     source: https://apolloautomation.github.io/MTR-1/firmware/manifest.json
 
 wifi:
+  # Keeps today's no-reboot on lost Wi-Fi; 2026.11 drops the AP exemption
+  reboot_timeout: 0s
   power_save_mode: none
   on_connect:
     - component.update: update_http_request
