@@ -8,7 +8,7 @@ esphome:
     name: "ApolloAutomation.MTR-1"
     version: "${version}"
 
-  min_version: 2025.8.0
+  min_version: 2026.10.0
   on_boot:
   - priority: 500
     then:
@@ -29,10 +29,14 @@ dashboard_import:
 
 improv_serial:
 
-esp32_improv:
+improv_ble:
   authorizer: none
 
 wifi:
+  # Keeps today's no-reboot on lost Wi-Fi; 2026.11 drops the AP exemption
+  reboot_timeout: 0s
+  on_connect:
+    - component.update: update_http_request
   ap:
     ssid: "Apollo MTR1 Hotspot"
 
@@ -41,7 +45,16 @@ logger:
 ota:
   - platform: esphome
     id: ota_esphome
+  - platform: http_request
+    id: ota_managed
 
+safe_mode:
+
+update:
+  - platform: http_request
+    id: update_http_request
+    name: Firmware Update
+    source: https://apolloautomation.github.io/MTR-1/firmware/manifest.json
 
 packages:
   core: !include Core.yaml
