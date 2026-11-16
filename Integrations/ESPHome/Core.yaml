@@ -1,6 +1,6 @@
 substitutions:
   name: apollo-mtr-1
-  version: "26.11.15.1"
+  version: "26.11.16.1"
   device_description: ${name} made by Apollo Automation - version ${version}.
   # Manifest URL bases. Stable = GitHub Pages (main branch builds).
   # Beta = rolling "beta-fw" pre-release assets (beta branch builds).
@@ -289,21 +289,26 @@ binary_sensor:
 
     on_release:
       then:
-        - lambda: |-
-            if (millis() - id(button_press_timestamp) >= 10000) {
-              id(factory_reset_switch).turn_on();
-            }
-            else if (millis() - id(button_press_timestamp) >= 3000) {
-              // Mains powered: no Prevent Sleep, so a 3-10 s hold does nothing.
-            }
-            else {
-              // StatusCheck
-              id(statusCheck).execute();
-              delay(3000);
-              id(testCycleCount) = 0;
-              id(runTest) = true;
-              id(testScript).execute();
-            }
+        - if:
+            condition:
+              lambda: "return millis() - id(button_press_timestamp) >= 10000;"
+            then:
+              - switch.turn_on: factory_reset_switch
+            else:
+              - if:
+                  condition:
+                    lambda: "return millis() - id(button_press_timestamp) < 3000;"
+                  then:
+                    # Mains powered: no Prevent Sleep, so a 3-10 s hold does nothing.
+                    # Status colour first, for its full window, then the self-test.
+                    # YAML delays keep the main loop (API, BLE proxy, UART) running.
+                    - script.execute: statusCheck
+                    - script.wait: statusCheck
+                    - delay: 3s
+                    - lambda: |-
+                        id(testCycleCount) = 0;
+                        id(runTest) = true;
+                    - script.execute: testScript
 
 sensor:
   - platform: internal_temperature
